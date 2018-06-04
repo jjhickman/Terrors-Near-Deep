@@ -1,7 +1,7 @@
 function executeMainLoop(filename){
 	//jQuery ajax call to load the .obj file from the local directory
 	$.ajax({
-		url:"./"+filename,
+		url:"./obj/"+filename,
 		success:function(data) {processMesh(data, filename);}
 	});
 }
@@ -26,7 +26,7 @@ function loadSkyBox(filename)
 {
 	console.log("SKYBOX LOADING");
 	$.ajax({
-		url:"./" + filename,
+		url:"./obj/" + filename,
 		success: function (data){
 			if(data.target != undefined){
 				var mesh = {model: new modelLoader.Mesh(data.target.result)}
@@ -45,7 +45,7 @@ function loadHead(filename)
 {
 	console.log("MONSTER HEAD LOADING");
 	$.ajax({
-		url:"./" + filename,
+		url:"./obj/" + filename,
 		success: function (data){
 			if(data.target != undefined){
 				var mesh = {model: new modelLoader.Mesh(data.target.result)}
@@ -64,7 +64,7 @@ function loadTentacles(filename)
 {
 	console.log("TENTACLES LOADING");
 	$.ajax({
-		url:"./" + filename,
+		url:"./obj/" + filename,
 		success: function (data){
 			if(data.target != undefined){
 				var mesh = {model: new modelLoader.Mesh(data.target.result)}
@@ -84,7 +84,7 @@ function loadShip(filename)
 {
 	console.log("SHIP LOADING");
 	$.ajax({
-		url:"./" + filename,
+		url:"./obj/" + filename,
 		success: function (data){
 			if(data.target != undefined){
 				var mesh = {model: new modelLoader.Mesh(data.target.result)}
@@ -110,7 +110,7 @@ function setupLoadingCallbacks(){
 			$("select option:selected").each(function(){
 				filename = $(this).text(); // grab the filename from the selection
 				$.ajax({
-					url:"./"+filename,
+					url:"./obj/" + filename,
 					success:processMesh// --- processMesh when the .obj is loaded
 				});
 			});

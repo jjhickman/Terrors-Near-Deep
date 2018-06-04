@@ -1,12 +1,14 @@
-<!----AUTHORED AND OWNED JOSHUA HICKMAN SPRING 2018 ---->
-<!----COSC456 FINAL PROJECT ---->
+<!----AUTHORED AND OWNED JOSHUA HICKMAN---->
+<!----CONTACT ME AT joshjohnhickman@gmail.com for questions or remarks---->
+
 
 
 <html>
 <head>
 <meta charset="utf-8">
-<title>Hickman Final Project</title>
-<!-- include all javascript source files -->
+<title>Terrors Near & Deep</title>
+
+<!-- JavaScript source files-->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript" src="js/sylvester.js"></script>
 <script type="text/javascript" src="js/math.js"></script>
@@ -18,6 +20,8 @@
 <script type="text/javascript" src="js/main.js"></script>
 </head>
 <body>
+
+<!--Formatted Description-->
 <div class="wrapper" style="margin:0 auto; width: 960px; height: 540px; position: fixed; top:2px; left:2px;">
 	<canvas id="glcanvas">canvas not supported</canvas>
 	<div style="border: none; position: fixed; top:2px ;left: 1085px; width:280px; height:540px;" align="left">
@@ -53,7 +57,8 @@
 	</script>
 	</div>
 </div>
-<!---- LIGHTHOUSE (FOG SHADING + PHONG SHADING)---->
+
+<!---- LIGHTHOUSE SHADERS (FOG SHADING + PHONG SHADING)---->
 <script id="FragmentShader1" type="x-shader/x-fragment">
 #ifdef GL_OES_standard_derivatives
 #extension GL_OES_standard_derivatives : enable
@@ -68,54 +73,72 @@ varying mat4 P;
 varying float fogz;
 
 void main(void){
+
+	// Illumination and shading material properties
+	vec3 ambient, diffuse, specular;
 	vec3 Ka = vec3(0.0, 0.0, 0.0225);
 	vec3 Kd = vec3(0.5038, 0.17048, 0.0428);
 	vec3 Ks = vec3(0.255777, 0.136622, 0.085014);
 	vec3 Il = vec3(0.2, 0.2, 0.5);
 	float shine = 50.5;
+
+	// Fog properties
 	float LOG2 = 1.442695;
 	float fogDensity;
 
-	vec3 ambient, diffuse, specular;
 
+	// Discard fragments below "water" level
 	if(v_Pos.y < -10.0) discard;
-	// transform position to eye space
-	vec4 eye = MV * vec4(v_Pos, 1.0);
+
+	// Height based density of fog
 	if(v_Pos.y < 42.0) fogDensity = clamp((1.0 - (abs(v_Pos.y)/(abs(v_Pos.y) + 0.15))), 0.0, 1.0);
 	else fogDensity = 0.0035;
+
+	// Exponential fog
 	float fogFactor = clamp(exp2(-fogDensity * fogDensity * fogz * fogz * LOG2), 0.0, 1.0);
+
+	// Give impression of blue light from moon
 	vec4 fogColor = vec4(0.2, 0.2, 0.3, 1.0);
 
-	// get direction vectors
-	vec3 N = normalize(vec3(MV * vec4(Normal, 0.0))); // normal direction 
-	vec3 L = normalize(vec3(MV * vec4(200.0,160.0,-200.0,1.0) - eye));
-	vec3 R = reflect(-L, N);	// reflect direction
-	vec3 V = normalize(vec3(vec4(camPos,1.0) - eye));
+	// Convert object coord. into eye space
+	vec4 eye = MV * vec4(v_Pos, 1.0);
 
 
+	// Direction vectors for light
+	vec3 N = normalize(vec3(MV * vec4(Normal, 0.0))); // Vertex Normal
+	vec3 L = normalize(vec3(MV * vec4(200.0,160.0,-200.0,1.0) - eye)); // Light Direction from Moon
+	vec3 R = reflect(-L, N); // Reflected Light from Surface
+	vec3 V = normalize(vec3(vec4(camPos,1.0) - eye)); // Viewing Direction (from camera)
+
+	// I = Ka*Il + Kd*Il*(L.N) + Ks*(R.V)^shine
 	ambient = Ka * Il;
 	diffuse = Kd * clamp(dot(L, N), 0.0, 1.0);
 	specular = Ks * pow(clamp(dot(R,V), 0.0, 1.0), shine);
+	vec4 color = vec4(ambient + diffuse + specular, 1.0);
 
-	vec4 color = vec4(ambient + diffuse/* + specular*/, 1.0);
+	// Set final color
 	gl_FragColor = mix(fogColor, color, fogFactor);
 }
 </script>
 
 <script id="VertexShader1" type="x-shader/x-vertex">
-attribute vec3 vPos; //vertex position
-attribute vec3 norms;	// per-vertex normal vectors
+
+// Object geometry (vertex position and per-vertex normals)
+attribute vec3 vPos; 
+attribute vec3 norms;
 
 varying vec3 Normal;	//Normal to be sent to Fragment Shader
 varying vec3 v_Pos;			// vertex position
 varying vec3 camPos;		// camera position
 varying mat4 MV;	// ModelView Matrix
-varying mat4 P;		// projection View Matrix
+varying mat4 P;	// Projection Matrix
 varying float fogz;
+
 uniform mat4 uMVMatrix; // modelviewmatrix
 uniform mat4 uPMatrix; // projection matrix
 uniform vec3 u_camPos;	// camera position
 
+// Pass to fragment shader
 void main(void) {
 	Normal = norms;
 	MV = uMVMatrix;
@@ -127,7 +150,7 @@ void main(void) {
 }
 </script>
 
-<!----SHIP (FOG SHADING + TEXTURE MAPPING  + PHONG SHADING) ---->
+<!----SHIP (FOG SHADING + TOON SHADING) ---->
 <script id="FragmentShader2" type="x-shader/x-fragment">
 #ifdef GL_OES_standard_derivatives
 #extension GL_OES_standard_derivatives : enable
@@ -140,9 +163,12 @@ varying vec3 camPos;
 varying mat4 MV;
 varying mat4 P;
 varying float fogz;
+
 void main(void){
+
 	float shine = 100.0;
 	float LOG2 = 1.442695;
+	vec4 color;
 
 	// transform position to eye space
 	vec4 eye = MV * vec4(v_Pos, 1.0);
@@ -158,7 +184,6 @@ void main(void){
 	vec3 N = normalize(vec3(MV * vec4(Normal, 0.0))); // normal direction 
 	vec3 L = normalize(vec3(MV * vec4(200.0,160.0,-200.0,1.0) - eye));
 	
-	vec4 color;
 	float intensity = clamp(dot(L, N), 0.0, 1.0);
 	if(intensity > 0.95) color = vec4(0.8, 0.5, 0.6, 1.0);
 	else if(intensity > 0.70) color = vec4(0.6, 0.3, 0.5, 1.0);
