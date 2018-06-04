@@ -1,1 +1,2 @@
 # Terrors-Near-Deep
+My final project for Computer Graphics class at UT. It is a scene including a multitude of effects including animation, illumination, reflection, textures, environment mapping, and several forms of shading. The scene depicts a sea monster attacking a helpless ship in the ocean bay just beyond the lighthouse. Below is a link to the web page demonstrating the project. *Note: It displays best on desktop rather than mobile.
